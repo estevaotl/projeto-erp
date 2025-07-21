@@ -1,0 +1,23 @@
+{
+    "name": "pc-quarto/projeto-erp-montink",
+    "type": "project",
+    "autoload": {
+        "psr-4": {
+            "PcQuarto\\ProjetoErpMontink\\": "src/",
+            "Api\\" : "api/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Estevao Leite",
+            "email": "estevaotlnf@gmail.com"
+        }
+    ],
+    "require": {
+        "slim/slim": "^4.14",
+        "twig/twig": "^3.21",
+        "slim/http": "^1.4",
+        "slim/psr7": "^1.7",
+        "vlucas/phpdotenv": "^5.6"
+    }
+}

@@ -1,0 +1,132 @@
+{% extends "base.twig" %}
+
+{% block title %}Produtos
+{% endblock %}
+
+{% block link %}
+	<link rel="stylesheet" href="/assets/styles.css">
+	<link rel="stylesheet" href="/assets/styles/dashboard/styles.css">
+{% endblock %}
+
+{% block content %}
+	<nav>
+		<a href="/">Início</a>
+		<a href="/cupons">Cupons</a>
+		<a href="/pedidos">Pedidos</a>
+	</nav>
+
+	<main class="dashboard">
+		<h1>Bem-vindo ao seu painel de produtos!</h1>
+		<p>Aqui você poderá gerenciar seus produtos e acompanhar tudo com agilidade.</p>
+
+		<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modal-cadastro-produto">
+			Cadastrar Novo Produto
+		</button>
+
+		<!-- Modal -->
+		<div class="modal fade modal-xl" id="modal-cadastro-produto" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h1 class="modal-title fs-5" id="exampleModalLabel">Cadastro Produtos</h1>
+						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+					</div>
+					<div class="modal-body">
+						<form class="formulario-cadastro-produto">
+							<div class="mb-3">
+								<label for="nomeProduto" class="form-label">Nome</label>
+								<textarea class="form-control" id="nomeProduto" rows="3"></textarea>
+							</div>
+
+							<hr>
+
+							<div class="modal-header">
+								<h1 class="modal-title fs-5" id="exampleModalLabel">Cadastro Itens</h1>
+							</div>
+
+							<div class="div__itens row g-3 mt-2 mb-2">
+								<div class="col-md-2">
+									<label for="quantidade" class="form-label">Referencia</label>
+									<input type="text" class="form-control" id="quantidade">
+								</div>
+
+								<div class="col-md-2">
+									<label for="preco" class="form-label">Preço</label>
+									<input type="text" class="form-control" id="preco">
+								</div>
+
+								<div class="col-md-2">
+									<label for="quantidade" class="form-label">Quantidade</label>
+									<input type="number" class="form-control" id="quantidade">
+								</div>
+
+								<div class="col-md-2">
+									<label for="select-tamanho" class="form-label">Tamanho</label>
+									<select class="form-select" aria-label="Default select example">
+										<option selected>Tamanho</option>
+										<option value="P">P</option>
+										<option value="M">M</option>
+										<option value="G">G</option>
+										<option value="GG">GG</option>
+									</select>
+								</div>
+
+								<div class="col-md-2">
+									<label for="select-cor" class="form-label">Cor</label>
+									<select class="form-select" id="select-cor" aria-label="Default select example">
+										<option selected>Cor</option>
+										<option value="Azul">Azul</option>
+										<option value="Vermelho">Vermelho</option>
+										<option value="Branco">Branco</option>
+										<option value="Preto">Preto</option>
+									</select>
+								</div>
+
+								<div class="col-md-2">
+									<button class="btn btn-warning adicionar-mais-itens" style="margin-top: 32px;">Adicionar</button>
+								</div>
+							</div>
+
+							<button type="submit" class="btn btn-primary">Salvar</button>
+						</form>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+						<button type="button" class="btn btn-primary">Salvar</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="card-container">
+			{% for produto in produtos %}
+				<div class="card">
+					<h2>{{ produto.nome }}</h2>
+					<hr>
+					{% if produto.itens|length > 0 %}
+						{% for item in produto.itens %}
+							<p>Referencia:
+								{{ item.referencia }}</p>
+							<p>Cor:
+								{{ item.cor }}</p>
+							<p>Tamanho:
+								{{ item.tamanho }}</p>
+							<p>Estoque:
+								{{ item.estoque }}</p>
+							<p>Preco:
+								{{ item.cor }}</p>
+						{% endfor %}
+					{% else %}
+						<p>Nenhuma item cadastrado ainda para esse produto.</p>
+					{% endif %}
+				</div>
+			{% else %}
+				<p>Nenhuma produto cadastrado ainda.</p>
+			{% endfor %}
+		</div>
+	</main>
+{% endblock %}
+
+{% block scripts %}
+	<script src="/js/produto/produto.js"></script>
+{% endblock %}
