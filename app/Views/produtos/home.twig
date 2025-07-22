@@ -13,6 +13,14 @@
 		<a href="/">Início</a>
 		<a href="/cupons">Cupons</a>
 		<a href="/pedidos">Pedidos</a>
+
+		{% if pedido is defined and pedido.produtos is defined and pedido.produtos|length > 0 %}
+			{% set totalItens = pedido.produtos | map(p => p.itens | length) | reduce((a, b) => a + b) %}
+			<a href="/sacola">
+				Sacola
+				<span class="top-0 start-100 translate-middle badge rounded-pill bg-danger">{{ totalItens }}</span>
+			</a>
+		{% endif %}
 	</nav>
 
 	<main class="dashboard">
@@ -45,8 +53,7 @@
 							<hr>
 							<h5>Itens do Produto</h5>
 
-							<div id="area-itens-dinamicos">
-							</div>
+							<div id="area-itens-dinamicos"></div>
 
 							<button type="button" class="btn btn-warning adicionar-mais-itens">Adicionar</button>
 							<button type="submit" class="btn btn-primary salvar-produtos">Salvar</button>
@@ -59,15 +66,36 @@
 			</div>
 		</div>
 
+		<!-- Modal Sacola -->
+		<div class="modal fade" id="modal-sacola" tabindex="-1" aria-labelledby="modalSacolaLabel" aria-hidden="true">
+			<div class="modal-dialog modal-lg">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title" id="modalSacolaLabel">Itens disponíveis</h5>
+						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+					</div>
+					<div class="modal-body">
+						<div
+							id="itens-disponiveis-sacola"><!-- Itens serão inseridos aqui dinamicamente -->
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+
 		<div class="card-container">
 			{% for produto in produtos %}
 				<div class="card" data-id="{{produto.id}}">
 					<h2>{{ produto.nome }}</h2>
 					<button class="btn btn-info editar-produto">Editar</button>
-					<button class="btn btn-danger excluir-produto" data-id="{{produto.id}}">Excluir</button>
+					<button class="btn btn-danger excluir-produto">Excluir</button>
+					<button class="btn btn-success comprar-produto">Comprar</button>
 					<hr>
 					{% if produto.itens|length > 0 %}
 						{% for item in produto.itens %}
+							<input type="hidden" value="{{item.id}}" class="idItem"/>
+
 							<p>Referencia:
 								{{ item.referencia }}</p>
 							<p>Cor:

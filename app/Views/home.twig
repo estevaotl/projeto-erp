@@ -60,6 +60,14 @@
 			<a href="/produtos">Produtos</a>
 			<a href="/cupons">Cupons</a>
 			<a href="/pedidos">Pedidos</a>
+
+			{% if pedido is defined and pedido.produtos is defined and pedido.produtos|length > 0 %}
+				{% set totalItens = pedido.produtos | map(p => p.itens | length) | reduce((a, b) => a + b) %}
+				<a href="/sacola">
+					Sacola
+					<span class="top-0 start-100 translate-middle badge rounded-pill bg-danger">{{ totalItens }}</span>
+				</a>
+			{% endif %}
 		</nav>
 
 		<div class="container flex-banner">

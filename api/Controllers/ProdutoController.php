@@ -4,23 +4,29 @@ namespace Api\Controllers;
 
 use Api\Models\ItemProduto;
 use Api\Models\Produto;
+use Api\Controllers\BaseController;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Twig\Environment;
-use Twig\Extension\DebugExtension;
-use Twig\Loader\FilesystemLoader;
 
-class ProdutoController {
-    private Environment $twig;
+class ProdutoController extends BaseController {
+    public function index(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface {
+        $produtoModel = new Produto();
+        $produtos = $produtoModel->obterTodos();
 
-    public function __construct() {
-        $loader = new FilesystemLoader(__DIR__ . '/../../app/Views');
+        $itemProdutoModel = new ItemProduto();
 
-        $this->twig = new Environment($loader, [
-            'debug' => true
+        if ($produtos && count($produtos) > 0) {
+            foreach ($produtos as &$produto) {
+                $itensProduto = $itemProdutoModel->obterComRestricoes(array("idProduto" => $produto['id']));
+                $produto['itens'] = $itensProduto;
+            }
+        }
+
+        // render herdado da base
+        return $this->render($response, 'produtos/home.twig', [
+            'produtos' => $produtos,
+            'pedido' => $_SESSION['pedido'] ?? null
         ]);
-
-        $this->twig->addExtension(new DebugExtension());
     }
 
     public function obterTodos(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface {
