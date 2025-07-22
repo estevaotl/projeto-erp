@@ -45,18 +45,34 @@ class ProdutoController {
         $data = $request->getParsedBody();
 
         $nomeProduto = $data['nomeProduto'];
-        $referencias = $data['referencia'] ?? [];
-        $precos = $data['preco'] ?? [];
-        $estoques = $data['estoque'] ?? [];
-        $tamanhos = $data['tamanho'] ?? [];
-        $cores = $data['cor'] ?? [];
+        $referencias = array_filter($data['referencia'] ?? [], function ($v) {
+            return $v !== '';
+        });
+
+        $precos = $data['preco'] ?? [];     // Mantém valores numéricos como 0.00
+        $estoques = $data['estoque'] ?? []; // Mantém valores como 0
+
+        $tamanhos = array_filter($data['tamanho'] ?? [], function ($v) {
+            return $v !== '';
+        });
+
+        $cores = array_filter($data['cor'] ?? [], function ($v) {
+            return $v !== '';
+        });
+
+        $quantidadeItens = count($referencias);
+
+        if ($quantidadeItens <= 0) {
+            $html = $this->twig->render('produtos/home.twig', ['erro' => 'Não é possivel cadastrar produtos sem ao menos ter 1 item vinculado.']);
+            $response->getBody()->write($html);
+            return $response->withStatus(400);
+        }
 
         $produtoModel = new Produto();
         $idProduto = $produtoModel->create($nomeProduto);
 
         $itemProdutoModel = new ItemProduto();
 
-        $quantidadeItens = count($referencias);
         for ($i = 0; $i < $quantidadeItens; $i++) {
             $dadosItem = [
                 'idProduto' => $idProduto,
@@ -78,14 +94,23 @@ class ProdutoController {
         $idProduto = $args['id'];
 
         $produtoModel = new Produto();
-        $produtoDesativado = $produtoModel->desativar($idProduto);
+        $produtoDesativadoComSucesso = $produtoModel->desativar($idProduto);
 
         $itemProdutoModel = new ItemProduto();
-        $itensDesativados = $itemProdutoModel->desativar($idProduto);
+        $itensProduto = $itemProdutoModel->obterComRestricoes(array("idProduto" => $idProduto));
+
+        $possuiItensAtivos = !empty($itensProduto);
+        $itensDesativadosComSucesso = true;
+
+        if ($possuiItensAtivos) {
+            $itensDesativadosComSucesso = $itemProdutoModel->desativar($idProduto);
+        }
+
+        $sucesso = $produtoDesativadoComSucesso && $itensDesativadosComSucesso;
 
         $resultado = [
-            'sucesso' => $produtoDesativado && $itensDesativados,
-            'mensagem' => ($produtoDesativado && $itensDesativados)
+            'sucesso' => $sucesso,
+            'mensagem' => $sucesso
                 ? 'Produto excluído com sucesso.'
                 : 'Falha ao excluir produto.'
         ];

@@ -23,6 +23,10 @@
 			Cadastrar Novo Produto
 		</button>
 
+		{% if erro %}
+			<div class="error-message">{{ erro }}</div>
+		{% endif %}
+
 		<!-- Modal -->
 		<div class="modal fade modal-xl" id="modal-cadastro-produto" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
 			<div class="modal-dialog">
