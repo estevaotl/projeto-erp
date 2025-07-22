@@ -32,67 +32,24 @@
 						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 					</div>
 					<div class="modal-body">
-						<form class="formulario-cadastro-produto">
+						<form class="formulario-cadastro-produto" action="/produtos/salvar" method="POST">
 							<div class="mb-3">
 								<label for="nomeProduto" class="form-label">Nome</label>
-								<textarea class="form-control" id="nomeProduto" rows="3"></textarea>
+								<textarea class="form-control" id="nomeProduto" rows="3" name="nomeProduto"></textarea>
 							</div>
 
 							<hr>
+							<h5>Itens do Produto</h5>
 
-							<div class="modal-header">
-								<h1 class="modal-title fs-5" id="exampleModalLabel">Cadastro Itens</h1>
+							<div id="area-itens-dinamicos">
 							</div>
 
-							<div class="div__itens row g-3 mt-2 mb-2">
-								<div class="col-md-2">
-									<label for="quantidade" class="form-label">Referencia</label>
-									<input type="text" class="form-control" id="quantidade">
-								</div>
-
-								<div class="col-md-2">
-									<label for="preco" class="form-label">Preço</label>
-									<input type="text" class="form-control" id="preco">
-								</div>
-
-								<div class="col-md-2">
-									<label for="quantidade" class="form-label">Quantidade</label>
-									<input type="number" class="form-control" id="quantidade">
-								</div>
-
-								<div class="col-md-2">
-									<label for="select-tamanho" class="form-label">Tamanho</label>
-									<select class="form-select" aria-label="Default select example">
-										<option selected>Tamanho</option>
-										<option value="P">P</option>
-										<option value="M">M</option>
-										<option value="G">G</option>
-										<option value="GG">GG</option>
-									</select>
-								</div>
-
-								<div class="col-md-2">
-									<label for="select-cor" class="form-label">Cor</label>
-									<select class="form-select" id="select-cor" aria-label="Default select example">
-										<option selected>Cor</option>
-										<option value="Azul">Azul</option>
-										<option value="Vermelho">Vermelho</option>
-										<option value="Branco">Branco</option>
-										<option value="Preto">Preto</option>
-									</select>
-								</div>
-
-								<div class="col-md-2">
-									<button class="btn btn-warning adicionar-mais-itens" style="margin-top: 32px;">Adicionar</button>
-								</div>
-							</div>
-
-							<button type="submit" class="btn btn-primary">Salvar</button>
+							<button type="button" class="btn btn-warning adicionar-mais-itens">Adicionar</button>
+							<button type="submit" class="btn btn-primary salvar-produtos">Salvar</button>
 						</form>
 					</div>
 					<div class="modal-footer">
-						<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-						<button type="button" class="btn btn-primary">Salvar</button>
+						<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
 					</div>
 				</div>
 			</div>
@@ -100,8 +57,10 @@
 
 		<div class="card-container">
 			{% for produto in produtos %}
-				<div class="card">
+				<div class="card" data-id="{{produto.id}}">
 					<h2>{{ produto.nome }}</h2>
+					<button class="btn btn-info editar-produto">Editar</button>
+					<button class="btn btn-danger excluir-produto" data-id="{{produto.id}}">Excluir</button>
 					<hr>
 					{% if produto.itens|length > 0 %}
 						{% for item in produto.itens %}
@@ -114,14 +73,14 @@
 							<p>Estoque:
 								{{ item.estoque }}</p>
 							<p>Preco:
-								{{ item.cor }}</p>
+								{{ item.preco }}</p>
 						{% endfor %}
 					{% else %}
-						<p>Nenhuma item cadastrado ainda para esse produto.</p>
+						<p>Nenhum item cadastrado ainda para esse produto.</p>
 					{% endif %}
 				</div>
 			{% else %}
-				<p>Nenhuma produto cadastrado ainda.</p>
+				<p>Nenhum produto cadastrado ainda.</p>
 			{% endfor %}
 		</div>
 	</main>

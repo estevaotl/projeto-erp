@@ -1,12 +1,13 @@
 <?php
+
 namespace Api\Controllers;
 
 use Api\Models\ItemProduto;
 use Api\Models\Produto;
-use Api\Models\User;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Twig\Environment;
+use Twig\Extension\DebugExtension;
 use Twig\Loader\FilesystemLoader;
 
 class ProdutoController {
@@ -14,7 +15,12 @@ class ProdutoController {
 
     public function __construct() {
         $loader = new FilesystemLoader(__DIR__ . '/../../app/Views');
-        $this->twig = new Environment($loader);
+
+        $this->twig = new Environment($loader, [
+            'debug' => true
+        ]);
+
+        $this->twig->addExtension(new DebugExtension());
     }
 
     public function obterTodos(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface {
@@ -35,60 +41,56 @@ class ProdutoController {
         return $response;
     }
 
-    public function login(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface {
+    public function salvar(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface {
         $data = $request->getParsedBody();
-        $email = trim($data['email'] ?? '');
-        $senha = $data['senha'] ?? '';
 
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL) || mb_strlen($senha) < 6) {
-            $html = $this->twig->render('auth/login.twig', ['erro' => 'Dados inválidos']);
-            $response->getBody()->write($html);
-            return $response->withStatus(400);
+        $nomeProduto = $data['nomeProduto'];
+        $referencias = $data['referencia'] ?? [];
+        $precos = $data['preco'] ?? [];
+        $estoques = $data['estoque'] ?? [];
+        $tamanhos = $data['tamanho'] ?? [];
+        $cores = $data['cor'] ?? [];
+
+        $produtoModel = new Produto();
+        $idProduto = $produtoModel->create($nomeProduto);
+
+        $itemProdutoModel = new ItemProduto();
+
+        $quantidadeItens = count($referencias);
+        for ($i = 0; $i < $quantidadeItens; $i++) {
+            $dadosItem = [
+                'idProduto' => $idProduto,
+                'itens' => [
+                    'referencia' => $referencias[$i] ?? '',
+                    'preco'      => $precos[$i] ?? 0,
+                    'estoque'    => $estoques[$i] ?? 0,
+                    'tamanho'    => $tamanhos[$i] ?? '',
+                    'cor'        => $cores[$i] ?? ''
+                ]
+            ];
+            $itemProdutoModel->create($dadosItem);
         }
 
-        $userModel = new User();
-        $user = $userModel->findByEmail($email);
-
-        if (!$user || !password_verify($senha, $user['senha'])) {
-            $html = $this->twig->render('auth/login.twig', ['erro' => 'Credenciais inválidas']);
-            $response->getBody()->write($html);
-            return $response->withStatus(401);
-        }
-
-        $_SESSION['usuario'] = $user['id'];
-        return $response->withHeader('Location', '/dashboard')->withStatus(302);
+        return $response->withHeader('Location', '/produtos')->withStatus(302);
     }
 
-    public function showRegister(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface {
-        $html = $this->twig->render('auth/register.twig');
-        $response->getBody()->write($html);
-        return $response;
-    }
+    public function excluir(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface {
+        $idProduto = $args['id'];
 
-    public function register(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface {
-        $data = $request->getParsedBody();
-        $email = trim($data['email'] ?? '');
-        $senha = $data['senha'] ?? '';
+        $produtoModel = new Produto();
+        $produtoDesativado = $produtoModel->desativar($idProduto);
 
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL) || strlen($senha) < 6) {
-            $html = $this->twig->render('auth/register.twig', ['erro' => 'Preencha corretamente os campos']);
-            $response->getBody()->write($html);
-            return $response->withStatus(400);
-        }
+        $itemProdutoModel = new ItemProduto();
+        $itensDesativados = $itemProdutoModel->desativar($idProduto);
 
-        $userModel = new User();
-        if ($userModel->findByEmail($email)) {
-            $html = $this->twig->render('auth/register.twig', ['erro' => 'Email já cadastrado']);
-            $response->getBody()->write($html);
-            return $response->withStatus(409);
-        }
+        $resultado = [
+            'sucesso' => $produtoDesativado && $itensDesativados,
+            'mensagem' => ($produtoDesativado && $itensDesativados)
+                ? 'Produto excluído com sucesso.'
+                : 'Falha ao excluir produto.'
+        ];
 
-        $userModel->create($email, $senha);
-        return $response->withHeader('Location', '/login')->withStatus(302);
-    }
-
-    public function logout(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface {
-        session_destroy();
-        return $response->withHeader('Location', '/login')->withStatus(302);
+        $response->getBody()->write(json_encode($resultado));
+        return $response->withHeader('Content-Type', 'application/json')->withStatus(200);
     }
 }
