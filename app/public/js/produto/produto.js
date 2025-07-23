@@ -158,74 +158,74 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-
     const modalCarrinho = new bootstrap.Modal(document.getElementById("modal-carrinho"));
 
     document.querySelectorAll(".comprar-produto").forEach(function (botao) {
         botao.addEventListener("click", function () {
             const card = this.closest(".card");
-            const paragrafos = card.querySelectorAll("p");
             const itensContainer = document.getElementById("itens-disponiveis-carrinho");
-
-            // Depois, dentro do loop que percorre os blocos de <p> (assumindo cada item ocupa 5 <p> consecutivos), faça:
-            // Isso pega o <input class="idItem"> correspondente ao bloco atual de informações (referência, cor, etc).
+            const linhas = card.querySelectorAll("tbody tr");
             const idItems = card.querySelectorAll("input.idItem");
 
             itensContainer.innerHTML = ""; // Limpa modal anterior
 
-            for (let i = 0; i < paragrafos.length; i += 5) {
-                const referencia = paragrafos[i]?.textContent.replace("Referencia:", "").trim();
-                const cor = paragrafos[i + 1]?.textContent.replace("Cor:", "").trim();
-                const tamanho = paragrafos[i + 2]?.textContent.replace("Tamanho:", "").trim();
-                const estoque = paragrafos[i + 3]?.textContent.replace("Estoque:", "").trim();
-                const preco = paragrafos[i + 4]?.textContent.replace("Preco:", "").trim();
+            linhas.forEach((linha, index) => {
+                const descricaoTexto = linha.querySelector(".descricao-item")?.textContent.trim();
+                const estoque = linha.querySelector(".estoque-item")?.textContent.trim();
+                const preco = linha.querySelector(".preco-item")?.textContent.trim();
+                const idItem = idItems[index]?.value;
 
-                const idItem = idItems[Math.floor(i / 5)]?.value;
+                if (descricaoTexto) {
+                    const partes = descricaoTexto.split(" - ");
+                    const referencia = partes[0] || "";
+                    const tamanho = partes[1] || "";
+                    const cor = partes[2] || "";
 
-                const itemHTML = `
-                    <div class="card mb-3">
-                        <div class="card-body">
-                        <p><strong>Referência:</strong> ${referencia}</p>
-                        <p><strong>Tamanho:</strong> ${tamanho}</p>
-                        <p><strong>Cor:</strong> ${cor}</p>
-                        <p><strong>Estoque:</strong> ${estoque}</p>
-                        <p><strong>Preço:</strong> R$ ${preco}</p>
-                        <div class="input-group mt-3">
-                            <input type="number" class="form-control quantidade-input" value="1" min="1">
-                            <button class="btn btn-success btn-adicionar-item"
-                                    data-idItem="${idItem}"
-                                    data-referencia="${referencia}"
-                                    data-cor="${cor}"
-                                    data-tamanho="${tamanho}"
-                                    data-preco="${preco}">
-                            Comprar
-                            </button>
+                    const itemHTML = `
+                        <div class="card mb-3">
+                            <div class="card-body">
+                            <p><strong>Referência:</strong> ${referencia}</p>
+                            <p><strong>Tamanho:</strong> ${tamanho}</p>
+                            <p><strong>Cor:</strong> ${cor}</p>
+                            <p><strong>Estoque:</strong> ${estoque}</p>
+                            <p><strong>Preço:</strong> R$ ${preco}</p>
+                            <div class="input-group mt-3">
+                                <input type="number" class="form-control quantidade-input" value="1" min="1">
+                                <button class="btn btn-success btn-adicionar-item"
+                                        data-idItem="${idItem}"
+                                        data-referencia="${referencia}"
+                                        data-cor="${cor}"
+                                        data-tamanho="${tamanho}"
+                                        data-preco="${preco}">
+                                Comprar
+                                </button>
+                            </div>
+                            </div>
                         </div>
-                        </div>
-                    </div>
-                `;
-
-                itensContainer.insertAdjacentHTML("beforeend", itemHTML);
-            }
+                    `;
+                    itensContainer.insertAdjacentHTML("beforeend", itemHTML);
+                }
+            });
 
             modalCarrinho.show();
         });
     });
 
-    // 🛒 Adiciona o item selecionado ao carrinho
+    // 🛒 Adiciona item ao carrinho
     document.getElementById("itens-disponiveis-carrinho").addEventListener("click", function (e) {
         if (e.target.classList.contains("btn-adicionar-item")) {
             const btn = e.target;
             const itemCard = btn.closest(".card-body");
             const quantidade = itemCard.querySelector(".quantidade-input").value;
 
+            const precoBruto = btn.getAttribute("data-preco")?.replace(",", ".");
             const dados = {
+                idItem: btn.getAttribute("data-idItem"),
                 referencia: btn.getAttribute("data-referencia"),
                 cor: btn.getAttribute("data-cor"),
                 tamanho: btn.getAttribute("data-tamanho"),
-                preco: btn.getAttribute("data-preco"),
-                quantidade: quantidade,
-                idItem: btn.getAttribute("data-idItem")
+                preco: precoBruto,
+                quantidade: parseInt(quantidade)
             };
 
             fetch("/carrinho/adicionar", {
@@ -249,5 +249,4 @@ document.addEventListener("DOMContentLoaded", function () {
                 });
         }
     });
-
 });
