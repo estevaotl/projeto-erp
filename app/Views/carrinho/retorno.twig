@@ -1,0 +1,48 @@
+{% extends "base.twig" %}
+
+{% block title %}Retorno
+{% endblock %}
+
+{% block link %}
+	<link rel="stylesheet" href="/assets/styles.css">
+{% endblock %}
+
+{% block content %}
+	<nav>
+		<a href="/">Início</a>
+		<a href="/produtos">Produtos</a>
+		<a href="/cupons">Cupons</a>
+		<a href="/pedidos">Pedidos</a>
+	</nav>
+
+	<main class="container mt-5">
+		<div class="alert alert-success">
+			<h4>Pedido Finalizado!</h4>
+			<p>Seu pedido foi registrado e um e-mail foi enviado para
+				<strong>{{ resumo.email }}</strong>.</p>
+		</div>
+
+		<div class="card">
+			<div class="card-body">
+				<p>
+					<strong>ID Pedido:</strong>
+					{{ resumo.idPedido }}</p>
+				<p>
+					<strong>Subtotal:</strong>
+					R$
+					{{ resumo.subtotal }}</p>
+				<p>
+					<strong>Frete:</strong>
+					R$
+					{{ resumo.frete }}</p>
+				<p>
+					<strong>Total:</strong>
+					R$
+					{{ resumo.total }}</p>
+				<p>
+					<strong>Endereço de entrega:</strong>
+					{{ resumo.enderecoFormatado }}</p>
+			</div>
+		</div>
+	</main>
+{% endblock %}

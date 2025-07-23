@@ -5,7 +5,7 @@
 
 {% block link %}
 	<link rel="stylesheet" href="/assets/styles.css">
-	<link rel="stylesheet" href="/assets/styles/dashboard/styles.css">
+	{# <link rel="stylesheet" href="/assets/styles/dashboard/styles.css"> #}
 {% endblock %}
 
 {% block content %}
@@ -14,20 +14,23 @@
 		<a href="/cupons">Cupons</a>
 		<a href="/pedidos">Pedidos</a>
 
-		{% if pedido is defined and pedido.produtos is defined and pedido.produtos|length > 0 %}
-			{% set totalItens = pedido.produtos | map(p => p.itens | length) | reduce((a, b) => a + b) %}
-			<a href="/sacola">
-				Sacola
+		{% if pedido is defined and pedido.itensPedido is defined and pedido.itensPedido|length > 0 %}
+			{% set totalItens = 0 %}
+			{% for item in pedido.itensPedido %}
+				{% set totalItens = totalItens + 1 %}
+			{% endfor %}
+			<a href="/carrinho">
+				Carrinho
 				<span class="top-0 start-100 translate-middle badge rounded-pill bg-danger">{{ totalItens }}</span>
 			</a>
 		{% endif %}
 	</nav>
 
-	<main class="dashboard">
+	<main class="container my-5">
 		<h1>Bem-vindo ao seu painel de produtos!</h1>
 		<p>Aqui você poderá gerenciar seus produtos e acompanhar tudo com agilidade.</p>
 
-		<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modal-cadastro-produto">
+		<button type="button" class="btn btn-primary mb-4" data-bs-toggle="modal" data-bs-target="#modal-cadastro-produto">
 			Cadastrar Novo Produto
 		</button>
 
@@ -66,55 +69,70 @@
 			</div>
 		</div>
 
-		<!-- Modal Sacola -->
-		<div class="modal fade" id="modal-sacola" tabindex="-1" aria-labelledby="modalSacolaLabel" aria-hidden="true">
+		<!-- Modal Carrinho -->
+		<div class="modal fade" id="modal-carrinho" tabindex="-1" aria-labelledby="modalCarrinhoLabel" aria-hidden="true">
 			<div class="modal-dialog modal-lg">
 				<div class="modal-content">
 					<div class="modal-header">
-						<h5 class="modal-title" id="modalSacolaLabel">Itens disponíveis</h5>
+						<h5 class="modal-title" id="modalCarrinhoLabel">Itens disponíveis</h5>
 						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
 					</div>
 					<div class="modal-body">
 						<div
-							id="itens-disponiveis-sacola"><!-- Itens serão inseridos aqui dinamicamente -->
+							id="itens-disponiveis-carrinho"><!-- Itens serão inseridos aqui dinamicamente -->
 						</div>
 					</div>
 				</div>
 			</div>
 		</div>
 
+		{% for produto in produtos %}
+			<div class="card mb-4">
+				<div class="card-header bg-dark text-white" data-id="{{produto.id}}">
+					Produto #{{ produto.id }} 
 
-		<div class="card-container">
-			{% for produto in produtos %}
-				<div class="card" data-id="{{produto.id}}">
-					<h2>{{ produto.nome }}</h2>
 					<button class="btn btn-info editar-produto">Editar</button>
 					<button class="btn btn-danger excluir-produto">Excluir</button>
 					<button class="btn btn-success comprar-produto">Comprar</button>
-					<hr>
-					{% if produto.itens|length > 0 %}
-						{% for item in produto.itens %}
-							<input type="hidden" value="{{item.id}}" class="idItem"/>
+				</div>
 
-							<p>Referencia:
-								{{ item.referencia }}</p>
-							<p>Cor:
-								{{ item.cor }}</p>
-							<p>Tamanho:
-								{{ item.tamanho }}</p>
-							<p>Estoque:
-								{{ item.estoque }}</p>
-							<p>Preco:
-								{{ item.preco }}</p>
-						{% endfor %}
+				<div class="card-body">
+					<p>
+						<strong>Nome:</strong>
+						<span class="nome-produto">{{ produto.nome }}</span></p>
+
+					<hr>
+					<h5>Itens:</h5>
+					{% set itens = produto.itens %}
+					{% if itens|length > 0 %}
+						<table class="table table-bordered table-sm mt-2">
+							<thead class="table-secondary">
+								<tr>
+									<th>Item</th>
+									<th>Estoque</th>
+									<th>Preço</th>
+								</tr>
+							</thead>
+							<tbody>
+								{% for item in itens %}
+									<input type="hidden" value="{{item.id}}" class="idItem"/>
+
+									<tr>
+										<td class="descricao-item">{{ item.referencia~" - "~item.tamanho~" - "~item.cor }}</td>
+										<td class="estoque-item">{{ item.estoque }}</td>
+										<td>R$ <span class="preco-item">{{ item.preco|number_format(2, ",", ".") }}</span></td>
+									</tr>
+								{% endfor %}
+							</tbody>
+						</table>
 					{% else %}
-						<p>Nenhum item cadastrado ainda para esse produto.</p>
+						<p class="text-muted">Este produto não possui itens registrados.</p>
 					{% endif %}
 				</div>
-			{% else %}
-				<p>Nenhum produto cadastrado ainda.</p>
-			{% endfor %}
-		</div>
+			</div>
+		{% else %}
+			<p>Nenhum produto cadastrado ainda.</p>
+		{% endfor %}
 	</main>
 {% endblock %}
 

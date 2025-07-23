@@ -34,4 +34,19 @@ class Produto {
         $stmt->execute([':id' => $idProduto]);
         return $stmt->rowCount() > 0;
     }
+
+    public function obterComRestricoes(array $restricoes): ?array {
+        $pdo = Database::getInstance();
+        $sql = "SELECT * FROM " . self::NOME_TABELA . " WHERE " . self::NOME_TABELA . ".ativo = 1 ";
+        $parametros = array();
+        if (is_numeric($restricoes['id'])) {
+            $sql .= " AND " . self::NOME_TABELA . ".id = :id ";
+            $parametros['id'] = $restricoes['id'];
+        }
+
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($parametros);
+        $itensProduto = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $itensProduto ?: null;
+    }
 }

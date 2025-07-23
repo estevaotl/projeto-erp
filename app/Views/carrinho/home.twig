@@ -1,0 +1,101 @@
+{% extends "base.twig" %}
+
+{% block title %}Carrinho
+{% endblock %}
+
+{% block link %}
+	<link rel="stylesheet" href="/assets/styles.css">
+{% endblock %}
+
+{% block content %}
+	<nav>
+		<a href="/">Início</a>
+		<a href="/produtos">Produtos</a>
+		<a href="/cupons">Cupons</a>
+		<a href="/pedidos">Pedidos</a>
+	</nav>
+
+	<main class="dashboard">
+		<h1>Bem-vindo ao seu carrinho!</h1>
+		<p>Aqui você poderá gerenciar seu pedido e fechar a compra.</p>
+
+		{% if erro %}
+			<div class="error-message">{{ erro }}</div>
+		{% endif %}
+
+		<div class="card-container">
+			<div class="row">
+				{% for itemPedido in pedido.itensPedido %}
+					<div class="col-md-6 mb-4">
+						<div class="card border-secondary">
+							<div class="card-header bg-secondary text-white">
+								Item #{{ itemPedido.idItem }}
+							</div>
+							<div class="card-body">
+								<p>
+									<strong>Referência:</strong>
+									{{ itemPedido.referencia }}</p>
+								<p>
+									<strong>Cor:</strong>
+									{{ itemPedido.cor }}</p>
+								<p>
+									<strong>Tamanho:</strong>
+									{{ itemPedido.tamanho }}</p>
+								<p>
+									<strong>Quantidade:</strong>
+									{{ itemPedido.quantidade }}</p>
+								<p>
+									<strong>Preço Unitário:</strong>
+									R$
+									{{ itemPedido.preco|number_format(2, ",", ".") }}</p>
+								<p>
+									<strong>Total:</strong>
+									R$
+									{{ (itemPedido.preco * itemPedido.quantidade)|number_format(2, ",", ".") }}</p>
+							</div>
+						</div>
+					</div>
+				{% else %}
+					<p>Nenhum item adicionado ao carrinho.</p>
+				{% endfor %}
+			</div>
+
+			{% if pedido is defined and pedido.itensPedido is defined and pedido.itensPedido|length > 0 %}
+				<div class="d-flex justify-content-end mt-4">
+					<button class="btn btn-primary btn-finalizar-carrinho">Finalizar Compra</button>
+				</div>
+			{% endif %}
+		</div>
+	</main>
+
+	<!-- Modal de Finalização -->
+	<div class="modal fade" id="modal-finalizar-compra" tabindex="-1" aria-labelledby="modalFinalizarLabel" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<form class="form-finalizar">
+					<div class="modal-header">
+						<h5 class="modal-title" id="modalFinalizarLabel">Finalizar Pedido</h5>
+						<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+					</div>
+					<div class="modal-body">
+						<label class="form-label">Informe seu CEP</label>
+						<input type="text" name="cep" class="form-control" placeholder="Ex: 01001-000" required>
+
+						<label class="form-label mt-3">Email</label>
+						<input type="email" name="email" class="form-control" placeholder="seu@email.com" required>
+
+						<div id="cep-resultado" class="mt-3 text-muted small"></div>
+					</div>
+					<div class="modal-footer">
+						<button type="submit" class="btn btn-success">Finalizar Pedido</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+
+{% endblock %}
+
+{% block scripts %}
+	<script src="/js/carrinho/carrinho.js"></script>
+{% endblock %}

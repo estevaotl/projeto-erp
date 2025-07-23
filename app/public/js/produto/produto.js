@@ -114,26 +114,43 @@ document.addEventListener("DOMContentLoaded", function () {
         document.querySelectorAll(".editar-produto").forEach(function (botaoEditar) {
             botaoEditar.addEventListener("click", function () {
                 const card = this.closest(".card");
-                const produtoId = card.getAttribute("data-id");
-                const nome = card.querySelector("h2").textContent.trim();
-                const paragrafos = card.querySelectorAll("p");
+                const header = card.querySelector(".card-header");
+                const produtoId = header.getAttribute("data-id");
+                const nome = card.querySelector(".nome-produto").textContent.trim();
 
                 modal.show();
                 form.reset();
                 nomeProduto.value = nome;
                 areaItens.innerHTML = "";
 
-                for (let i = 0; i < paragrafos.length; i += 5) {
-                    const item = {
-                        referencia: paragrafos[i]?.textContent.replace("Referencia:", "").trim(),
-                        cor: paragrafos[i + 1]?.textContent.replace("Cor:", "").trim(),
-                        tamanho: paragrafos[i + 2]?.textContent.replace("Tamanho:", "").trim(),
-                        estoque: paragrafos[i + 3]?.textContent.replace("Estoque:", "").trim(),
-                        preco: paragrafos[i + 4]?.textContent.replace("Preco:", "").trim(),
-                    };
+                const linhas = card.querySelectorAll("tbody tr");
+                const idItems = card.querySelectorAll(".idItem");
 
-                    areaItens.insertAdjacentHTML("beforeend", criarItemHTML(item));
-                }
+                linhas.forEach((linha, index) => {
+                    const descricaoTexto = linha.querySelector(".descricao-item")?.textContent.trim();
+                    const estoque = linha.querySelector(".estoque-item")?.textContent.trim();
+                    const preco = linha.querySelector(".preco-item")?.textContent.trim().replace(',', '.');
+
+                    const idItem = idItems[index]?.value;
+
+                    if (descricaoTexto) {
+                        const partes = descricaoTexto.split(" - ");
+                        const referencia = partes[0] || "";
+                        const tamanho = partes[1] || "";
+                        const cor = partes[2] || "";
+
+                        const item = {
+                            idItem,
+                            referencia,
+                            tamanho,
+                            cor,
+                            estoque,
+                            preco
+                        };
+
+                        areaItens.insertAdjacentHTML("beforeend", criarItemHTML(item));
+                    }
+                });
 
                 form.action = `/produtos/editar/${produtoId}`;
                 form.method = "POST";
@@ -141,14 +158,14 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    const modalSacola = new bootstrap.Modal(document.getElementById("modal-sacola"));
+
+    const modalCarrinho = new bootstrap.Modal(document.getElementById("modal-carrinho"));
 
     document.querySelectorAll(".comprar-produto").forEach(function (botao) {
         botao.addEventListener("click", function () {
             const card = this.closest(".card");
-            const idProduto = card.getAttribute("data-id");
             const paragrafos = card.querySelectorAll("p");
-            const itensContainer = document.getElementById("itens-disponiveis-sacola");
+            const itensContainer = document.getElementById("itens-disponiveis-carrinho");
 
             // Depois, dentro do loop que percorre os blocos de <p> (assumindo cada item ocupa 5 <p> consecutivos), faça:
             // Isso pega o <input class="idItem"> correspondente ao bloco atual de informações (referência, cor, etc).
@@ -176,8 +193,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         <div class="input-group mt-3">
                             <input type="number" class="form-control quantidade-input" value="1" min="1">
                             <button class="btn btn-success btn-adicionar-item"
-                                    data-idproduto="${idProduto}"
-                                    data-iditem="${idItem}"
+                                    data-idItem="${idItem}"
                                     data-referencia="${referencia}"
                                     data-cor="${cor}"
                                     data-tamanho="${tamanho}"
@@ -192,28 +208,27 @@ document.addEventListener("DOMContentLoaded", function () {
                 itensContainer.insertAdjacentHTML("beforeend", itemHTML);
             }
 
-            modalSacola.show();
+            modalCarrinho.show();
         });
     });
 
     // 🛒 Adiciona o item selecionado ao carrinho
-    document.getElementById("itens-disponiveis-sacola").addEventListener("click", function (e) {
+    document.getElementById("itens-disponiveis-carrinho").addEventListener("click", function (e) {
         if (e.target.classList.contains("btn-adicionar-item")) {
             const btn = e.target;
             const itemCard = btn.closest(".card-body");
             const quantidade = itemCard.querySelector(".quantidade-input").value;
 
             const dados = {
-                idProduto: btn.getAttribute("data-idproduto"),
                 referencia: btn.getAttribute("data-referencia"),
                 cor: btn.getAttribute("data-cor"),
                 tamanho: btn.getAttribute("data-tamanho"),
                 preco: btn.getAttribute("data-preco"),
                 quantidade: quantidade,
-                idItem: btn.getAttribute("data-iditem")
+                idItem: btn.getAttribute("data-idItem")
             };
 
-            fetch("/sacola/adicionar", {
+            fetch("/carrinho/adicionar", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(dados)
@@ -221,8 +236,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 .then(res => res.json())
                 .then(res => {
                     if (res.sucesso) {
-                        alert("Item adicionado à sacola!");
-                        modalSacola.hide();
+                        alert("Item adicionado ao carrinho!");
+                        modalCarrinho.hide();
                         location.reload();
                     } else {
                         alert(res.mensagem || "Erro ao adicionar item.");

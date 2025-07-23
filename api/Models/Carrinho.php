@@ -5,7 +5,7 @@ namespace Api\Models;
 use Api\Core\Database;
 use PDO;
 
-class Sacola {
+class Carrinho {
     const NOME_TABELA = "produtos";
 
     public function obterTodos() {

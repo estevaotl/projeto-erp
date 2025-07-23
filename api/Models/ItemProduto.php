@@ -30,11 +30,17 @@ class ItemProduto {
 
     public function obterComRestricoes(array $restricoes): ?array {
         $pdo = Database::getInstance();
-        $sql = "SELECT * FROM " . self::NOME_TABELA . " WHERE itens_produtos.ativo = 1 ";
+        $sql = "SELECT * FROM " . self::NOME_TABELA . " WHERE " . self::NOME_TABELA . ".ativo = 1 ";
         $parametros = array();
-        if (is_numeric($restricoes['idProduto'])) {
-            $sql .= " AND itens_produtos.idProduto = :idProduto ";
+
+        if (isset($restricoes["idProduto"]) && is_numeric($restricoes['idProduto'])) {
+            $sql .= " AND " . self::NOME_TABELA . ".idProduto = :idProduto ";
             $parametros['idProduto'] = $restricoes['idProduto'];
+        }
+
+        if (isset($restricoes["id"]) && is_numeric($restricoes['id'])) {
+            $sql .= " AND " . self::NOME_TABELA . ".id = :id ";
+            $parametros['id'] = $restricoes['id'];
         }
 
         $stmt = $pdo->prepare($sql);

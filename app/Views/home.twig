@@ -1,84 +1,40 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-	<head>
-		<meta charset="UTF-8">
-		<title>Montink</title>
-		<style>
-			/* Reset básico */
-			* {
-				margin: 0;
-				padding: 0;
-				box-sizing: border-box;
-			}
+{% extends "base.twig" %}
 
-			/* Fonte principal */
-			body {
-				font-family: 'Segoe UI', Tahoma, sans-serif;
-				background-color: #f7f9fc;
-				color: #333;
-				line-height: 1.6;
-			}
-			/* Navbar simples */
-			nav {
-				background-color: #3f86f2;
-				padding: 1rem;
-				display: flex;
-				gap: 1rem;
-			}
+{% block title %}Pagina Inicial
+{% endblock %}
 
-			nav a {
-				color: white;
-				text-decoration: none;
-				font-weight: bold;
-			}
+{% block link %}
+	<link rel="stylesheet" href="/assets/styles.css">
+{% endblock %}
 
-			nav a:hover {
-				text-decoration: underline;
-			}
 
-			.container {
-				padding: 2rem;
-			}
+{% block content %}
+	<nav>
+		<a href="/">Início</a>
+		<a href="/produtos">Produtos</a>
+		<a href="/cupons">Cupons</a>
+		<a href="/pedidos">Pedidos</a>
 
-			.flex-banner {
-				display: flex;
-				justify-content: space-between;
+		{% if pedido is defined and pedido.itensPedido is defined and pedido.itensPedido|length > 0 %}
+			{% set totalItens = 0 %}
+			{% for item in pedido.itensPedido %}
+				{% set totalItens = totalItens + 1 %}
+			{% endfor %}
+			<a href="/carrinho">
+				Carrinho
+				<span class="top-0 start-100 translate-middle badge rounded-pill bg-danger">{{ totalItens }}</span>
+			</a>
+		{% endif %}
+	</nav>
 
-				gap: 2rem;
-			}
-
-			.image-section img {
-				max-width: 70%;
-				height: auto;
-				border-radius: 8px;
-			}
-		</style>
-	</head>
-	<body>
-		<nav>
-			<a href="/">Início</a>
-			<a href="/produtos">Produtos</a>
-			<a href="/cupons">Cupons</a>
-			<a href="/pedidos">Pedidos</a>
-
-			{% if pedido is defined and pedido.produtos is defined and pedido.produtos|length > 0 %}
-				{% set totalItens = pedido.produtos | map(p => p.itens | length) | reduce((a, b) => a + b) %}
-				<a href="/sacola">
-					Sacola
-					<span class="top-0 start-100 translate-middle badge rounded-pill bg-danger">{{ totalItens }}</span>
-				</a>
-			{% endif %}
-		</nav>
-
-		<div class="container flex-banner">
-			<div class="text-section">
-				<h1>Bem-vindo ao ERP da Montink</h1>
-				<p>Selecione a opção desejada no menu acima.</p>
-			</div>
-
-			<div class="image-section">
-				<img src="/assets/images/image_montink_index.png" alt="Imagem de destaque do Nuvix">
-			</div>
+	<div class="container flex-banner">
+		<div class="text-section">
+			<h1>Bem-vindo ao ERP da Montink</h1>
+			<p>Selecione a opção desejada no menu acima.</p>
 		</div>
-	</body>
-</html>
+
+		<div class="image-section">
+			<img src="/assets/images/image_montink_index.png" alt="Imagem de destaque do Nuvix">
+		</div>
+	</div>
+{% endblock %}
