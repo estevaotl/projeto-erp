@@ -93,7 +93,7 @@ document.addEventListener("DOMContentLoaded", function () {
             if (!botaoExcluir) return;
 
             botaoExcluir.addEventListener("click", function () {
-                const id = card.getAttribute("data-id");
+                const id = this.closest(".card-header").getAttribute("data-id");
                 if (!confirm("Tem certeza que deseja excluir este produto?")) return;
 
                 fetch(`/produtos/excluir/${id}`, { method: "DELETE" })
