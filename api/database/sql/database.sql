@@ -3,9 +3,9 @@ USE montink;
 
 CREATE TABLE cupons (
     id INT AUTO_INCREMENT PRIMARY KEY,
+    referencia VARCHAR(200) NOT NULL,
     validade TIMESTAMP DEFAULT NULL,
     valorMinimo DECIMAL (10,2) DEFAULT 0,
-    valorFrete DECIMAL (10,2) DEFAULT 0,
     ativo TINYINT NOT NULL DEFAULT '1'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
 

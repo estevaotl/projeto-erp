@@ -12,6 +12,7 @@ error_reporting(E_ALL);
 use Api\Controllers\IndexController;
 use Api\Controllers\ProdutoController;
 use Api\Controllers\CarrinhoController;
+use Api\Controllers\CupomController;
 use Api\Controllers\PedidoController;
 use Slim\Factory\AppFactory;
 
@@ -33,6 +34,12 @@ $app->post('/carrinho/adicionar', [CarrinhoController::class, 'adicionarAoCarrin
 $app->post('/carrinho/frete', [CarrinhoController::class, 'calcularFrete']);
 $app->post('/carrinho/finalizar', [CarrinhoController::class, 'finalizarPedido']);
 $app->get('/carrinho/retorno', [CarrinhoController::class, 'retorno']);
+
+
+$app->get('/cupons', [CupomController::class, 'index']);
+$app->post('/cupons/salvar', [CupomController::class, 'salvar']);
+$app->delete('/cupons/excluir/{id}', [CupomController::class, 'excluir']);
+$app->post('/cupons/editar/{id}', [CupomController::class, 'editar']);
 
 $app->get('/pedidos', [PedidoController::class, 'index']);
 

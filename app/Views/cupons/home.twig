@@ -1,0 +1,108 @@
+{% extends "base.twig" %}
+
+{% block title %}Cupons
+{% endblock %}
+
+{% block link %}
+	<link rel="stylesheet" href="/assets/styles.css">
+{% endblock %}
+
+{% block content %}
+	<nav>
+		<a href="/">Início</a>
+		<a href="/produtos">Produtos</a>
+		<a href="/pedidos">Pedidos</a>
+
+		{% if pedido is defined and pedido.itensPedido is defined and pedido.itensPedido|length > 0 %}
+			{% set totalItens = 0 %}
+			{% for item in pedido.itensPedido %}
+				{% set totalItens = totalItens + 1 %}
+			{% endfor %}
+			<a href="/carrinho">
+				Carrinho
+				<span class="top-0 start-100 translate-middle badge rounded-pill bg-danger">{{ totalItens }}</span>
+			</a>
+		{% endif %}
+	</nav>
+
+	<main class="container my-5">
+		<h1>Bem-vindo ao seu painel de cupons!</h1>
+		<p>Aqui você poderá gerenciar seus cupons e acompanhar tudo com agilidade.</p>
+
+		<button type="button" class="btn btn-primary mb-4" data-bs-toggle="modal" data-bs-target="#modal-cadastro-cupom">
+			Cadastrar Novo Cupom
+		</button>
+
+		{% if erro %}
+			<div class="error-message">{{ erro }}</div>
+		{% endif %}
+
+		<!-- Modal -->
+		<div class="modal fade modal-xl" id="modal-cadastro-cupom" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h1 class="modal-title fs-5" id="exampleModalLabel">Cadastro Cupons</h1>
+						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+					</div>
+					<div class="modal-body">
+						<form class="formulario-cadastro-cupom" action="/cupons/salvar" method="POST">
+							<div class="mb-3">
+								<label for="referencia" class="form-label">Referencia</label>
+								<input class="form-control" type="text" id="referencia" name="referencia">
+							</div>
+
+							<div class="mb-3">
+								<label for="validade" class="form-label">Validade</label>
+								<input class="form-control" type="datetime-local" id="validade" name="validade">
+							</div>
+
+							<div class="mb-3">
+								<label for="valorMinimo" class="form-label">Valor Minimo</label>
+								<input class="form-control" type="number" step="0.01" class="form-control" name="valorMinimo" id="valorMinimo">
+							</div>
+
+							<button type="submit" class="btn btn-primary salvar-cupom">Salvar</button>
+						</form>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		{% for cupom in cupons %}
+			<div class="card mb-4" data-id="{{cupom.id}}">
+				<div class="card-header bg-dark text-white">
+					Cupom #{{ cupom.id }}
+
+					<button class="btn btn-info editar-cupom">Editar</button>
+					<button class="btn btn-danger excluir-cupom">Excluir</button>
+				</div>
+
+				<div class="card-body">
+					<p>
+						<strong>Referencia:</strong>
+						<span class="referencia-cupom">{{ cupom.referencia }}</span>
+					</p>
+					<p>
+						<strong>Validade:</strong>
+						<span class="validade-cupom">{{ cupom.validade }}</span>
+					</p>
+					<p>
+						<strong>Valor Minimo: R$
+						</strong>
+						<span class="valorMinimo-cupom">{{ cupom.valorMinimo|number_format(2, ",", ".") }}</span>
+					</p>
+				</div>
+			</div>
+		{% else %}
+			<p>Nenhum cupom cadastrado ainda.</p>
+		{% endfor %}
+	</main>
+{% endblock %}
+
+{% block scripts %}
+	<script src="/js/cupom/cupom.js"></script>
+{% endblock %}
