@@ -3,6 +3,8 @@ document.addEventListener("DOMContentLoaded", function () {
     const formFinalizar = document.querySelector(".form-finalizar");
     const btnFinalizar = document.querySelector(".btn-finalizar-carrinho");
     const resultadoCep = document.getElementById("cep-resultado");
+    const selectCupom = document.querySelector(".cupom-select");
+    const descontoCupomDiv = document.getElementById("desconto-cupom");
 
     if (btnFinalizar) {
         btnFinalizar.addEventListener("click", function () {
@@ -17,6 +19,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const cep = formFinalizar.querySelector('input[name="cep"]').value.trim();
         const email = formFinalizar.querySelector('input[name="email"]').value.trim();
+        const cupomSelecionado = selectCupom?.value;
 
         if (!cep.match(/^\d{5}-?\d{3}$/)) {
             resultadoCep.textContent = "CEP inválido.";
@@ -34,7 +37,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 fetch("/carrinho/finalizar", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ cep, email })
+                    body: JSON.stringify({ cep, email, cupom: cupomSelecionado })
                 })
                     .then(res => res.json())
                     .then(res => {
@@ -47,4 +50,18 @@ document.addEventListener("DOMContentLoaded", function () {
             })
             .catch(() => resultadoCep.textContent = "Erro ao consultar CEP.");
     });
+
+    if (selectCupom) {
+        selectCupom.addEventListener("change", function () {
+            const selectedOption = this.options[this.selectedIndex];
+            const desconto = selectedOption.getAttribute("data-desconto");
+
+            if (desconto) {
+                descontoCupomDiv.innerHTML = `<strong>Desconto aplicado:</strong> R$ ${parseFloat(desconto).toFixed(2).replace(".", ",")}`;
+            } else {
+                descontoCupomDiv.innerHTML = "";
+            }
+        });
+    }
+
 });

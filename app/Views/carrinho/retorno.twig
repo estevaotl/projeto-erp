@@ -35,14 +35,18 @@
 					<strong>Frete:</strong>
 					R$
 					{{ resumo.frete }}</p>
-				<p>
-					<strong>Total:</strong>
+				{% if resumo.possuiCupom and resumo.descontoCupom > 0 %}
+					<strong>Desconto Cupom:</strong>
 					R$
-					{{ resumo.total }}</p>
-				<p>
-					<strong>Endereço de entrega:</strong>
-					{{ resumo.enderecoFormatado }}</p>
-			</div>
+					{{ resumo.descontoCupom }}</p>
+				{% endif %}
+			<p>
+				<strong>Total:</strong>
+				R$
+				{{ resumo.total }}</p>
+			<p>
+				<strong>Endereço de entrega:</strong>
+				{{ resumo.enderecoFormatado }}</p>
 		</div>
-	</main>
-{% endblock %}
+	</div>
+</main>{% endblock %}

@@ -5,6 +5,7 @@ namespace Api\Controllers;
 use Api\Models\ItemProduto;
 use Api\Models\Produto;
 use Api\Controllers\BaseController;
+use Api\Models\Cupom;
 use Api\Models\ItemPedido;
 use Api\Models\Pedido;
 use Exception;
@@ -14,9 +15,13 @@ use Psr\Http\Message\ServerRequestInterface;
 
 class CarrinhoController extends BaseController {
     public function index(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface {
+        $cupomModel = new Cupom();
+        $cupons = $cupomModel->obterTodos();
+
         // render herdado da base
         return $this->render($response, 'carrinho/home.twig', [
-            'pedido' => $_SESSION['pedido'] ?? null
+            'pedido' => $_SESSION['pedido'] ?? null,
+            'cupons' => $cupons
         ]);
     }
 
@@ -126,134 +131,141 @@ class CarrinhoController extends BaseController {
     }
 
     public function finalizarPedido(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface {
-        if (!isset($_SESSION)) {
-            session_start();
-        }
+        try {
+            if (!isset($_SESSION)) {
+                session_start();
+            }
 
-        $data = json_decode($request->getBody()->getContents(), true);
+            $data = json_decode($request->getBody()->getContents(), true);
 
-        $cep = $data['cep'] ?? '';
-        $emailCliente = $data['email'] ?? '';
+            $cep = $data['cep'] ?? '';
+            $emailCliente = $data['email'] ?? '';
+            $idCupom = $data['cupom'] ?? '';
 
-        if (empty($cep) || empty($emailCliente)) {
-            $response->getBody()->write(json_encode([
-                'sucesso' => false,
-                'mensagem' => 'Dados incompletos'
-            ]));
-            return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
-        }
+            if (empty($cep) || empty($emailCliente)) {
+                throw new Exception('Dados incompletos.');
+            }
 
-        $viaCep = file_get_contents("https://viacep.com.br/ws/{$cep}/json");
-        $endereco = json_decode($viaCep, true);
+            $viaCep = file_get_contents("https://viacep.com.br/ws/{$cep}/json");
+            $endereco = json_decode($viaCep, true);
 
-        if (isset($endereco['erro'])) {
-            $response->getBody()->write(json_encode([
-                'sucesso' => false,
-                'mensagem' => 'CEP inválido.'
-            ]));
-            return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
-        }
+            if (isset($endereco['erro'])) {
+                throw new Exception('CEP inválido.');
+            }
 
-        if (!isset($_SESSION['pedido']['itensPedido']) || empty($_SESSION['pedido']['itensPedido'])) {
-            $response->getBody()->write(json_encode([
-                'sucesso' => false,
-                'mensagem' => 'Carrinho vazio.'
-            ]));
-            return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
-        }
+            if (!isset($_SESSION['pedido']['itensPedido']) || empty($_SESSION['pedido']['itensPedido'])) {
+                throw new Exception('Carrinho vazio.');
+            }
 
-        $subTotal = 0;
+            $valorDescontoCupom = 0;
+            $cupomValido = false;
+            if (isset($idCupom) && is_numeric($idCupom)) {
+                $cupomModel = new Cupom();
+                $cupom = $cupomModel->obterComRestricoes(array("id" => $idCupom));
+                if(empty($cupom)) {
+                    throw new Exception('Cupom selecionado inválido.');
+                }
 
-        foreach ($_SESSION['pedido']['itensPedido'] as $itemPedido) {
-            $subTotal += ((float) $itemPedido['preco'] * (int) $itemPedido['quantidade']);
-        }
+                $cupom = array_shift($cupom);
+                $cupomValido = true;
+                $valorDescontoCupom = $cupom["valorDesconto"];
+            }
 
-        // Regras de frete
-        if ($subTotal >= 52 && $subTotal <= 166.59) {
-            $frete = 15.00;
-        } elseif ($subTotal > 200) {
-            $frete = 0.00;
-        } else {
-            $frete = 20.00;
-        }
+            $subTotal = 0;
+            foreach ($_SESSION['pedido']['itensPedido'] as $itemPedido) {
+                $subTotal += ((float) $itemPedido['preco'] * (int) $itemPedido['quantidade']);
+            }
 
-        $total = $subTotal + $frete;
+            // Regras de frete
+            if ($subTotal >= 52 && $subTotal <= 166.59) {
+                $frete = 15.00;
+            } elseif ($subTotal > 200) {
+                $frete = 0.00;
+            } else {
+                $frete = 20.00;
+            }
 
-        $pedidoModel = new Pedido();
-        $idPedido = $pedidoModel->create(
-            array(
-                "valorPedido" => $total,
-                "valorFrete"  => $frete,
-                "status"      => "ABERTO",
-                "idCupom"     => NULL
+            $total = $subTotal + $frete - $valorDescontoCupom;
+
+            $pedidoModel = new Pedido();
+            $idPedido = $pedidoModel->create(
+                array(
+                    "valorPedido" => $total,
+                    "valorFrete"  => $frete,
+                    "status"      => "ABERTO",
+                    "idCupom"     => ($cupomValido ? $idCupom : NULL)
                 )
             );
 
-        $itemPedidoModel = new ItemPedido();
-        foreach ($_SESSION['pedido']['itensPedido'] as $itemPedido) {
-            $itemPedidoModel->create(
-                array(
-                    "idPedido"   => $idPedido,
-                    "quantidade" => $itemPedido['quantidade'],
-                    'idItem'     => $itemPedido['idItem']
-                )
+            $itemPedidoModel = new ItemPedido();
+            foreach ($_SESSION['pedido']['itensPedido'] as $itemPedido) {
+                $itemPedidoModel->create(
+                    array(
+                        "idPedido"   => $idPedido,
+                        "quantidade" => $itemPedido['quantidade'],
+                        'idItem'     => $itemPedido['idItem']
+                    )
                 );
+            }
+
+            $resumo = [
+                'idPedido'          => $idPedido,
+                'subtotal'          => number_format($subTotal, 2, ',', '.'),
+                'frete'             => number_format($frete, 2, ',', '.'),
+                'total'             => number_format($total, 2, ',', '.'),
+                'possuiCupom'       => $cupomValido,
+                'descontoCupom'     => number_format($valorDescontoCupom, 2, ',', '.'),
+                'cep'               => $cep,
+                'email'             => $emailCliente,
+                'enderecoFormatado' => "{$endereco['logradouro']}, {$endereco['bairro']}, {$endereco['localidade']} - {$endereco['uf']}"
+            ];
+
+            $mail = new PHPMailer(true);
+            try {
+                $mail->isSMTP();
+                $mail->Host = 'smtp-relay.brevo.com';
+                $mail->SMTPAuth = true;
+                $mail->Username = 'estevaotlnf@gmail.com';
+                $mail->Password = 'vE4FS89nGwgOUAPV';
+                $mail->SMTPSecure = 'tls';
+                $mail->Port = 587;
+                $mail->setLanguage("br");
+                $mail->CharSet = 'UTF-8';
+
+                $mail->setFrom('estevaotlnf@gmail.com', 'Loja Exemplo');
+                $mail->addAddress($emailCliente);
+                $mail->Subject = 'Confirmação de Pedido';
+                $mail->isHTML(true);
+                $mail->Body = "
+                    <h3>Pedido confirmado!</h3>" .
+                    "<p><strong>Subtotal:</strong> R$ {$resumo['subtotal']}</p>" .
+                    "<p><strong>Frete:</strong> R$ {$resumo['frete']}</p>" .
+                    ($cupomValido ? "<p><strong>DescontoCupom:</strong> R$ {$resumo['descontoCupom']}</p>" : "") .
+                    "<p><strong>Total:</strong> R$ {$resumo['total']}</p>" .
+                    "<hr>" .
+                    "<p>Entrega para: {$resumo['enderecoFormatado']}</p>
+                ";
+
+
+                $mail->send();
+            } catch (Exception $e) {
+                // log opcional
+            }
+
+            $_SESSION['resumoPedido'] = $resumo;
+            unset($_SESSION['pedido']);
+
+            $response->getBody()->write(json_encode([
+                'sucesso' => true
+            ]));
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(200);
+        } catch (\Throwable $th) {
+            $response->getBody()->write(json_encode([
+                'sucesso' => false,
+                'mensagem' => $th->getMessage()
+            ]));
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
         }
-
-        $resumo = [
-            'idPedido' => $idPedido,
-            'subtotal' => number_format($subTotal, 2, ',', '.'),
-            'frete'    => number_format($frete, 2, ',', '.'),
-            'total'    => number_format($total, 2, ',', '.')
-        ];
-
-        $resumo = [
-            'idPedido'          => $idPedido,
-            'subtotal'          => number_format($subTotal, 2, ',', '.'),
-            'frete'             => number_format($frete, 2, ',', '.'),
-            'total'             => number_format($total, 2, ',', '.'),
-            'cep'               => $cep,
-            'email'             => $emailCliente,
-            'enderecoFormatado' => "{$endereco['logradouro']}, {$endereco['bairro']}, {$endereco['localidade']} - {$endereco['uf']}"
-        ];
-
-        $mail = new PHPMailer(true);
-        try {
-            $mail->isSMTP();
-            $mail->Host = 'smtp-relay.brevo.com';
-            $mail->SMTPAuth = true;
-            $mail->Username = 'estevaotlnf@gmail.com';
-            $mail->Password = 'vE4FS89nGwgOUAPV';
-            $mail->SMTPSecure = 'tls';
-            $mail->Port = 587;
-            $mail->setLanguage("br");
-            $mail->CharSet = 'UTF-8';
-
-            $mail->setFrom('estevaotlnf@gmail.com', 'Loja Exemplo');
-            $mail->addAddress($emailCliente);
-            $mail->Subject = 'Confirmação de Pedido';
-            $mail->isHTML(true);
-            $mail->Body = "
-                <h3>Pedido confirmado!</h3>
-                <p><strong>Subtotal:</strong> R$ {$resumo['subtotal']}</p>
-                <p><strong>Frete:</strong> R$ {$resumo['frete']}</p>
-                <p><strong>Total:</strong> R$ {$resumo['total']}</p>
-                <hr>
-                <p>Entrega para: {$resumo['enderecoFormatado']}</p>
-            ";
-
-            $mail->send();
-        } catch (Exception $e) {
-            // log opcional
-        }
-
-        $_SESSION['resumoPedido'] = $resumo;
-        unset($_SESSION['pedido']);
-
-        $response->getBody()->write(json_encode([
-            'sucesso' => true
-        ]));
-        return $response->withHeader('Content-Type', 'application/json')->withStatus(200);
     }
 
     public function retorno(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface {
