@@ -30,8 +30,12 @@ class ItemProduto {
 
     public function obterComRestricoes(array $restricoes): ?array {
         $pdo = Database::getInstance();
-        $sql = "SELECT * FROM " . self::NOME_TABELA . " WHERE " . self::NOME_TABELA . ".ativo = 1 ";
-        $parametros = array();
+        $sql = "SELECT * FROM " . self::NOME_TABELA . " WHERE 1 ";
+        $parametros = [];
+
+        if (!isset($restricoes['ativosSomente']) || $restricoes['ativosSomente'] === true) {
+            $sql .= " AND " . self::NOME_TABELA . ".ativo = 1 ";
+        }
 
         if (isset($restricoes["idProduto"]) && is_numeric($restricoes['idProduto'])) {
             $sql .= " AND " . self::NOME_TABELA . ".idProduto = :idProduto ";
@@ -46,6 +50,7 @@ class ItemProduto {
         $stmt = $pdo->prepare($sql);
         $stmt->execute($parametros);
         $itensProduto = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
         return $itensProduto ?: null;
     }
 

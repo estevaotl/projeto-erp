@@ -23,20 +23,26 @@ class PedidoController extends BaseController {
             $itensPedido = $itemPedidoModel->obterComRestricoes(array("idPedido" => $pedido["id"]));
 
             if (!empty($itensPedido)) {
-                foreach ($itensPedido as &$itemPedido) {
-                    $item = array_shift($itemProdutoModel->obterComRestricoes(array("id" => $itemPedido["idItem"])));
-                    if(empty($item))
+                foreach ($itensPedido as &$itemPedido) { 
+                    $itemBanco = $itemProdutoModel->obterComRestricoes(array("id" => $itemPedido["idItem"], "ativosSomente" => false));
+                    if(empty($itemBanco))
                         continue;
 
-                    $produto = array_shift($produtoModel->obterComRestricoes(array("id" => $item["idProduto"])));
-                    if(empty($produto))
+                    $item = array_shift($itemBanco);
+
+                    $produtoBanco = $produtoModel->obterComRestricoes(array("id" => $item["idProduto"], "ativosSomente" => false));
+                    if(empty($produtoBanco))
                         continue;
+
+                    $produto = array_shift($produtoBanco);
 
                     $infosItem = array(
-                        "referencia"  => $item["referencia"],
-                        "tamanho"     => $item["tamanho"],
-                        "cor"         => $item["cor"],
-                        "nomeProduto" => $produto["nome"]
+                        "referencia"       => $item["referencia"],
+                        "tamanho"          => $item["tamanho"],
+                        "cor"              => $item["cor"],
+                        "nomeProduto"      => $produto["nome"],
+                        "itemEstaAtivo"    => filter_var($item["ativo"], FILTER_VALIDATE_BOOLEAN),
+                        "produtoEstaAtivo" => filter_var($produto["ativo"], FILTER_VALIDATE_BOOLEAN),
                     );
                     $itemPedido["infosItem"] = $infosItem;
                 }

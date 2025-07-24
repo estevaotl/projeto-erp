@@ -43,13 +43,16 @@
 
 						<hr>
 						<h5>Itens:</h5>
+
 						{% set itens = pedido.itensPedido ?? [] %}
 						{% if itens|length > 0 %}
 							<table class="table table-bordered table-sm mt-2">
 								<thead class="table-secondary">
 									<tr>
+										<th>Nome Produto</th>
 										<th>ID Item</th>
 										<th>Quantidade</th>
+										<th>Status</th>
 									</tr>
 								</thead>
 								<tbody>
@@ -58,6 +61,11 @@
 											<td>{{ item.infosItem.nomeProduto }}</td>
 											<td>{{ item.infosItem.referencia~" - "~item.infosItem.tamanho~" - "~item.infosItem.cor }}</td>
 											<td>{{ item.quantidade }}</td>
+											<td>
+												<span>{{ item.infosItem.itemEstaAtivo ? "<span class='badge text-bg-success'>Item está ativo</span>" : "<span class='badge text-bg-danger'>Item está desativado</span>"}} </span>
+												<br/>
+												<span>{{ item.infosItem.produtoEstaAtivo ? "<span class='badge text-bg-success'>Produto está ativo</span>" : "<span class='badge text-bg-danger'>Produto está desativado</span>" }}</span>
+											</td>
 										</tr>
 									{% endfor %}
 								</tbody>
