@@ -19,25 +19,27 @@ class Cupom {
 
     public function create(array $dados): int {
         $pdo = Database::getInstance();
-        $sql = "INSERT INTO " . self::NOME_TABELA . " (referencia, validade, valorMinimo) VALUES (:referencia, :validade, :valorMinimo)";
+        $sql = "INSERT INTO " . self::NOME_TABELA . " (referencia, validade, valorMinimo, valorDesconto) VALUES (:referencia, :validade, :valorMinimo, :valorDesconto)";
         $stmt = $pdo->prepare($sql);
         $stmt->execute([
-            ':referencia'  => $dados["referencia"],
-            ':validade'    => $dados["validade"],
-            ':valorMinimo' => $dados["valorMinimo"]
+            ':referencia'    => $dados["referencia"],
+            ':validade'      => $dados["validade"],
+            ':valorMinimo'   => $dados["valorMinimo"],
+            ':valorDesconto' => $dados["valorDesconto"],
         ]);
         return $pdo->lastInsertId();
     }
 
     public function atualizar(array $dados): bool {
         $pdo = Database::getInstance();
-        $sql = "UPDATE " . self::NOME_TABELA . " SET referencia = :referencia, validade = :validade, valorMinimo = :valorMinimo WHERE id = :id";
+        $sql = "UPDATE " . self::NOME_TABELA . " SET referencia = :referencia, validade = :validade, valorMinimo = :valorMinimo, valorDesconto = :valorDesconto WHERE id = :id";
         $stmt = $pdo->prepare($sql);
         $stmt->execute([
-            ':id'          => $dados["id"],
-            ':referencia'  => $dados["referencia"],
-            ':validade'    => $dados["validade"],
-            ':valorMinimo' => $dados["valorMinimo"]
+            ':id'            => $dados["id"],
+            ':referencia'    => $dados["referencia"],
+            ':validade'      => $dados["validade"],
+            ':valorMinimo'   => $dados["valorMinimo"],
+            ':valorDesconto' => $dados["valorDesconto"]
         ]);
         return $stmt->rowCount() > 0;
     }

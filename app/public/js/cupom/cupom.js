@@ -5,6 +5,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const referenciaCupom = document.getElementById("referencia");
     const validadeCupom = document.getElementById("validade");
     const valorMinimoCupom = document.getElementById("valorMinimo");
+    const valorDescontoCupom = document.getElementById("valorDesconto");
 
     inicializarBotaoCadastrarNovoCupom();
     inicializarBotaoSalvar();
@@ -64,12 +65,14 @@ document.addEventListener("DOMContentLoaded", function () {
                 const referencia = card.querySelector(".referencia-cupom").textContent.trim();
                 const validade = card.querySelector(".validade-cupom").textContent.trim();
                 const valorMinimo = card.querySelector(".valorMinimo-cupom").textContent.trim().replace(',', '.');
+                const valorDesconto = card.querySelector(".valorDesconto-cupom").textContent.trim().replace(',', '.');
 
                 modal.show();
                 form.reset();
                 referenciaCupom.value = referencia;
                 validadeCupom.value = validade;
                 valorMinimoCupom.value = valorMinimo;
+                valorDescontoCupom.value = valorDesconto;
 
                 form.action = `/cupons/editar/${cupomdId}`;
                 form.method = "POST";

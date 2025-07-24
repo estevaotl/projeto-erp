@@ -27,6 +27,7 @@ class CupomController extends BaseController {
             $referenciaCupom = $data['referencia'];
             $validadeCupom = $data['validade'];
             $valorMinimoCupom = $data['valorMinimo'];
+            $valorDesconto = $data['valorDesconto'];
 
             if (empty($referenciaCupom)) {
                 throw new Exception("Não é possivel cadastrar cupom sem enviar a referencia.");
@@ -35,9 +36,10 @@ class CupomController extends BaseController {
             $cupomModel = new Cupom();
             $cupomModel->create(
                 array(
-                    "referencia"  => $referenciaCupom,
-                    "validade"    => $validadeCupom,
-                    "valorMinimo" => $valorMinimoCupom,
+                    "referencia"    => $referenciaCupom,
+                    "validade"      => (!empty($validadeCupom) ? $validadeCupom : NULL),
+                    "valorMinimo"   => $valorMinimoCupom,
+                    "valorDesconto" => $valorDesconto
                 )
             );
 
@@ -66,6 +68,7 @@ class CupomController extends BaseController {
                 'referencia'  => $data['referencia'] ?? null,
                 'validade'    => $data['validade'] ?? null,
                 'valorMinimo' => $data['valorMinimo'] ?? null,
+                'valorDesconto' => $data['valorDesconto'] ?? null
             ], fn($valor) => $valor !== null);
 
             $cupomModel->atualizar($camposParaAtualizar);
