@@ -28,6 +28,23 @@ class ItemProduto {
         ]);
     }
 
+    public function update(int $id, array $dadosItem): bool {
+        $pdo = Database::getInstance();
+
+        $sql = "UPDATE " . self::NOME_TABELA . " SET preco = :preco, estoque = :estoque, cor = :cor, tamanho = :tamanho, referencia = :referencia WHERE id = :id AND ativo = 1";
+
+        $stmt = $pdo->prepare($sql);
+
+        return $stmt->execute([
+            ':id'         => $id,
+            ':referencia' => $dadosItem['referencia'],
+            ':preco'      => $dadosItem['preco'],
+            ':estoque'    => $dadosItem['estoque'],
+            ':tamanho'    => $dadosItem['tamanho'],
+            ':cor'        => $dadosItem['cor']
+        ]);
+    }
+
     public function obterComRestricoes(array $restricoes): ?array {
         $pdo = Database::getInstance();
         $sql = "SELECT * FROM " . self::NOME_TABELA . " WHERE 1 ";

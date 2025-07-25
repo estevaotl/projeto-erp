@@ -5,6 +5,7 @@ namespace Api\Controllers;
 use Api\Models\ItemProduto;
 use Api\Models\Produto;
 use Api\Controllers\BaseController;
+use Exception;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -48,52 +49,98 @@ class ProdutoController extends BaseController {
     }
 
     public function salvar(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface {
-        $data = $request->getParsedBody();
+        try {
+            $data = json_decode($request->getBody()->getContents(), true);
 
-        $nomeProduto = $data['nomeProduto'];
-        $referencias = array_filter($data['referencia'] ?? [], function ($v) {
-            return $v !== '';
-        });
+            if (!$data || empty($data['nome']) || empty($data['itens'])) {
+                throw new Exception("Dados inválidos");
+            }
 
-        $precos = $data['preco'] ?? [];     // Mantém valores numéricos como 0.00
-        $estoques = $data['estoque'] ?? []; // Mantém valores como 0
+            $nomeProduto = trim($data['nome']);
+            $itens = $data['itens'];
 
-        $tamanhos = array_filter($data['tamanho'] ?? [], function ($v) {
-            return $v !== '';
-        });
+            if (count($itens) === 0) {
+                throw new Exception("É necessário pelo menos um item vinculado ao produto.");
+            }
 
-        $cores = array_filter($data['cor'] ?? [], function ($v) {
-            return $v !== '';
-        });
+            $produtoModel = new Produto();
+            $idProduto = $produtoModel->create($nomeProduto);
 
-        $quantidadeItens = count($referencias);
+            $itemProdutoModel = new ItemProduto();
 
-        if ($quantidadeItens <= 0) {
-            $html = $this->twig->render('produtos/home.twig', ['erro' => 'Não é possivel cadastrar produtos sem ao menos ter 1 item vinculado.']);
-            $response->getBody()->write($html);
-            return $response->withStatus(400);
+            foreach ($itens as $item) {
+                $dadosItem = [
+                    'idProduto' => $idProduto,
+                    'itens' => [
+                        'referencia' => $item['referencia'] ?? '',
+                        'preco'      => $item['preco'] ?? 0,
+                        'estoque'    => $item['estoque'] ?? 0,
+                        'tamanho'    => $item['tamanho'] ?? '',
+                        'cor'        => $item['cor'] ?? ''
+                    ]
+                ];
+                $itemProdutoModel->create($dadosItem);
+            }
+
+            $response->getBody()->write(json_encode([
+                'sucesso' => true,
+                'mensagem' => "Produto e seus itens cadastrados com sucesso."
+            ]));
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(200);
+        } catch (\Throwable $th) {
+            $response->getBody()->write(json_encode([
+                'sucesso' => false,
+                'mensagem' => $th->getMessage()
+            ]));
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
         }
+    }
 
-        $produtoModel = new Produto();
-        $idProduto = $produtoModel->create($nomeProduto);
+    public function editar(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface {
+        try {
+            $idProduto = (int) ($args['id'] ?? 0);
 
-        $itemProdutoModel = new ItemProduto();
+            if ($idProduto <= 0) {
+                throw new Exception("ID do produto inválido.");
+            }
 
-        for ($i = 0; $i < $quantidadeItens; $i++) {
-            $dadosItem = [
-                'idProduto' => $idProduto,
-                'itens' => [
-                    'referencia' => $referencias[$i] ?? '',
-                    'preco'      => $precos[$i] ?? 0,
-                    'estoque'    => $estoques[$i] ?? 0,
-                    'tamanho'    => $tamanhos[$i] ?? '',
-                    'cor'        => $cores[$i] ?? ''
-                ]
-            ];
-            $itemProdutoModel->create($dadosItem);
+            $data = json_decode($request->getBody()->getContents(), true);
+
+            if (!$data || empty($data['nome']) || !isset($data['itens'])) {
+                throw new Exception("Dados inválidos enviados.");
+            }
+
+            $produtoModel = new Produto();
+            $produtoModel->update($idProduto, $data['nome']);
+
+            $itemProdutoModel = new ItemProduto();
+
+            foreach ($data['itens'] as $item) {
+                $idItem = $item['idItem'];
+
+                $dadosItem = [
+                    'referencia' => $item['referencia'] ?? '',
+                    'preco'      => $item['preco'] ?? 0,
+                    'estoque'    => $item['estoque'] ?? 0,
+                    'tamanho'    => $item['tamanho'] ?? '',
+                    'cor'        => $item['cor'] ?? '',
+                ];
+
+                $itemProdutoModel->update((int) $idItem, $dadosItem);
+            }
+
+            $response->getBody()->write(json_encode([
+                'sucesso' => true,
+                'mensagem' => "Produto atualizado com sucesso."
+            ]));
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(200);
+        } catch (\Throwable $th) {
+            $response->getBody()->write(json_encode([
+                'sucesso' => false,
+                'mensagem' => $th->getMessage()
+            ]));
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
         }
-
-        return $response->withHeader('Location', '/produtos')->withStatus(302);
     }
 
     public function excluir(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface {

@@ -248,9 +248,7 @@ class CarrinhoController extends BaseController {
 
 
                 $mail->send();
-            } catch (Exception $e) {
-                // log opcional
-            }
+            } catch (Exception $e) {}
 
             $_SESSION['resumoPedido'] = $resumo;
             unset($_SESSION['pedido']);

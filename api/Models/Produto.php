@@ -27,6 +27,17 @@ class Produto {
         return $pdo->lastInsertId();
     }
 
+    public function update(int $id, string $nome): bool {
+        $pdo = Database::getInstance();
+        $sql = "UPDATE " . self::NOME_TABELA . " SET nome = :nome WHERE id = :id AND ativo = 1";
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([
+            ':id'   => $id,
+            ':nome' => $nome
+        ]);
+        return $stmt->rowCount() > 0;
+    }
+
     public function desativar(int $idProduto): bool {
         $pdo = Database::getInstance();
         $sql = "UPDATE " . self::NOME_TABELA . " SET ativo = 0 WHERE id = :id";
@@ -44,14 +55,14 @@ class Produto {
             $sql .= " AND " . self::NOME_TABELA . ".ativo = 1 ";
         }
 
-        if (is_numeric($restricoes['id'])) {
+        if (isset($restricoes['id']) && is_numeric($restricoes['id'])) {
             $sql .= " AND " . self::NOME_TABELA . ".id = :id ";
             $parametros['id'] = $restricoes['id'];
         }
 
         $stmt = $pdo->prepare($sql);
         $stmt->execute($parametros);
-        $itensProduto = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        return $itensProduto ?: null;
+        $produtos = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $produtos ?: null;
     }
 }

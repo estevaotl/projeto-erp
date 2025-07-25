@@ -27,6 +27,7 @@ $app->get('/', [IndexController::class, 'index']);
 $app->get('/produtos', [ProdutoController::class, 'index']);
 $app->post('/produtos/salvar', [ProdutoController::class, 'salvar']);
 $app->delete('/produtos/excluir/{id}', [ProdutoController::class, 'excluir']);
+$app->post('/produtos/editar/{id}', [ProdutoController::class, 'editar']);
 
 
 $app->get('/carrinho', [CarrinhoController::class, 'index']);
