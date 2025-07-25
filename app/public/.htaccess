@@ -1,5 +1,10 @@
 RewriteEngine On
 
+# Remove barra no final da URL (exceto raiz) — ajuda a padronizar
+RewriteCond %{REQUEST_URI} !=/
+RewriteCond %{REQUEST_URI} ^(.+)/$
+RewriteRule ^ %1 [R=301,L]
+
 # Reescreve URLs amigáveis para index.php, exceto arquivos/diretórios reais
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
