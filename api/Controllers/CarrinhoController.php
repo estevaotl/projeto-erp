@@ -113,7 +113,6 @@ class CarrinhoController extends BaseController {
             }
         }
 
-        // Calcula frete conforme regra
         $frete = 20;
         if ($subtotal >= 52 && $subtotal <= 166.59) {
             $frete = 15;
@@ -176,7 +175,6 @@ class CarrinhoController extends BaseController {
                 $subTotal += ((float) $itemPedido['preco'] * (int) $itemPedido['quantidade']);
             }
 
-            // Regras de frete
             if ($subTotal >= 52 && $subTotal <= 166.59) {
                 $frete = 15.00;
             } elseif ($subTotal > 200) {
@@ -245,7 +243,6 @@ class CarrinhoController extends BaseController {
                     "<hr>" .
                     "<p>Entrega para: {$resumo['enderecoFormatado']}</p>
                 ";
-
 
                 $mail->send();
             } catch (Exception $e) {}
