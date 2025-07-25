@@ -236,6 +236,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 });
 
                 modalCarrinho.show();
+
+                const inputsQuantidade = document.querySelectorAll(".quantidade-input");
+                inicializarEventoChangeEstoque(inputsQuantidade);
             });
         });
     }
@@ -250,7 +253,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     <p><strong>Estoque:</strong> ${estoque}</p>
                     <p><strong>Preço:</strong> R$ ${preco}</p>
                     <div class="input-group mt-3">
-                        <input type="number" class="form-control quantidade-input" value="1" min="1">
+                        <input type="number" class="form-control quantidade-input" value="1" min="1" data-estoque-atual="${estoque}">
                         <button class="btn btn-success btn-adicionar-item"
                             data-idItem="${idItem}"
                             data-referencia="${referencia}"
@@ -310,4 +313,20 @@ document.addEventListener("DOMContentLoaded", function () {
                 });
         });
     }
+
+    function inicializarEventoChangeEstoque(inputQuantidade) {
+        if (inputQuantidade) {
+            inputQuantidade.forEach(input => {
+                input.addEventListener("change", () => {
+                    const estoqueAtual = input.getAttribute("data-estoque-atual");
+                    if (parseInt(input.value) > parseInt(estoqueAtual)) {
+                        alert("Só contamos com " + estoqueAtual + " em estoque no momento!");
+                        input.value = estoqueAtual;
+                    }
+                });
+            });
+        }
+    }
 });
+
+
