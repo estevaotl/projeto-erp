@@ -2,7 +2,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const modalFinalizar = new bootstrap.Modal(document.getElementById("modal-finalizar-compra"));
     const formFinalizar = document.querySelector(".form-finalizar");
     const btnFinalizar = document.querySelector(".btn-finalizar-carrinho");
-    const resultadoCep = document.getElementById("cep-resultado");
     const selectCupom = document.querySelector(".cupom-select");
     const descontoCupomDiv = document.getElementById("desconto-cupom");
 
@@ -17,12 +16,16 @@ document.addEventListener("DOMContentLoaded", function () {
     formFinalizar.addEventListener("submit", function (e) {
         e.preventDefault();
 
+        const botaoFinalizar = this.querySelector(".finalizar-pedido");
+        botaoFinalizar.disabled = true;
+
         const cep = formFinalizar.querySelector('input[name="cep"]').value.trim();
         const email = formFinalizar.querySelector('input[name="email"]').value.trim();
         const cupomSelecionado = selectCupom?.value;
 
         if (!cep.match(/^\d{5}-?\d{3}$/)) {
-            resultadoCep.textContent = "CEP inválido.";
+            alert("CEP inválido.");
+            botaoFinalizar.disabled = false;
             return;
         }
 
@@ -30,7 +33,8 @@ document.addEventListener("DOMContentLoaded", function () {
             .then(res => res.json())
             .then(endereco => {
                 if (endereco.erro) {
-                    resultadoCep.textContent = "CEP não encontrado.";
+                    alert("CEP não encontrado.");
+                    botaoFinalizar.disabled = false;
                     return;
                 }
 
@@ -45,10 +49,14 @@ document.addEventListener("DOMContentLoaded", function () {
                             window.location.href = "/carrinho/retorno";
                         } else {
                             alert(res.mensagem || "Erro ao finalizar.");
+                            botaoFinalizar.disabled = false;
                         }
                     });
             })
-            .catch(() => resultadoCep.textContent = "Erro ao consultar CEP.");
+            .catch(() => {
+                alert("Erro ao consultar CEP.");
+                botaoFinalizar.disabled = false;
+            });
     });
 
     if (selectCupom) {
@@ -63,5 +71,4 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
     }
-
 });
