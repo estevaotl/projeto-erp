@@ -95,6 +95,8 @@ DB_USER=usuario
 DB_PASS=senha
 ```
 
+### 4. Rodar o sql do banco de dados no seu local, localizado em `/api/database/sql`
+
 ---
 
 ## 🖥️ Configuração no XAMPP
