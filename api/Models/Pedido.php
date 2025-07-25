@@ -17,7 +17,7 @@ class Pedido {
         return $produtos ?: null;
     }
 
-    public function create(array $dados): int {
+    public function criar(array $dados): int {
         $pdo = Database::getInstance();
         $sql = "INSERT INTO " . self::NOME_TABELA . " (valorPedido, valorFrete, dataPedido, status, idCupom) VALUES (:valorPedido, :valorFrete, NOW(), :status, :idCupom)";
         $stmt = $pdo->prepare($sql);

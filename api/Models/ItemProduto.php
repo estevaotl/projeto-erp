@@ -8,7 +8,7 @@ use PDO;
 class ItemProduto {
     const NOME_TABELA = "itens_produtos";
 
-    public function create(array $dadosItem): bool {
+    public function criar(array $dadosItem): bool {
         $pdo = Database::getInstance();
 
         $sql = "INSERT INTO " . self::NOME_TABELA . " 
@@ -28,7 +28,7 @@ class ItemProduto {
         ]);
     }
 
-    public function update(int $id, array $dadosItem): bool {
+    public function atualizar(int $id, array $dadosItem): bool {
         $pdo = Database::getInstance();
 
         $sql = "UPDATE " . self::NOME_TABELA . " SET preco = :preco, estoque = :estoque, cor = :cor, tamanho = :tamanho, referencia = :referencia WHERE id = :id AND ativo = 1";

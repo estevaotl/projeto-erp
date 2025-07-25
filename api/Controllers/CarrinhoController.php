@@ -188,7 +188,7 @@ class CarrinhoController extends BaseController {
             $total = $subTotal + $frete - $valorDescontoCupom;
 
             $pedidoModel = new Pedido();
-            $idPedido = $pedidoModel->create(
+            $idPedido = $pedidoModel->criar(
                 array(
                     "valorPedido" => $total,
                     "valorFrete"  => $frete,
@@ -199,7 +199,7 @@ class CarrinhoController extends BaseController {
 
             $itemPedidoModel = new ItemPedido();
             foreach ($_SESSION['pedido']['itensPedido'] as $itemPedido) {
-                $itemPedidoModel->create(
+                $itemPedidoModel->criar(
                     array(
                         "idPedido"   => $idPedido,
                         "quantidade" => $itemPedido['quantidade'],

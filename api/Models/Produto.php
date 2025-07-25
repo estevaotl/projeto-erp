@@ -17,7 +17,7 @@ class Produto {
         return $produtos ?: null;
     }
 
-    public function create(string $nome): int {
+    public function criar(string $nome): int {
         $pdo = Database::getInstance();
         $sql = "INSERT INTO " . self::NOME_TABELA . " (nome) VALUES (:nome)";
         $stmt = $pdo->prepare($sql);
@@ -27,7 +27,7 @@ class Produto {
         return $pdo->lastInsertId();
     }
 
-    public function update(int $id, string $nome): bool {
+    public function atualizar(int $id, string $nome): bool {
         $pdo = Database::getInstance();
         $sql = "UPDATE " . self::NOME_TABELA . " SET nome = :nome WHERE id = :id AND ativo = 1";
         $stmt = $pdo->prepare($sql);

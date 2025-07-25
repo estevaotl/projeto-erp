@@ -17,7 +17,7 @@ class Cupom {
         return $cupons ?: null;
     }
 
-    public function create(array $dados): int {
+    public function criar(array $dados): int {
         $pdo = Database::getInstance();
         $sql = "INSERT INTO " . self::NOME_TABELA . " (referencia, validade, valorMinimo, valorDesconto) VALUES (:referencia, :validade, :valorMinimo, :valorDesconto)";
         $stmt = $pdo->prepare($sql);

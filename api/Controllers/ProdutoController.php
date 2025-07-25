@@ -64,7 +64,7 @@ class ProdutoController extends BaseController {
             }
 
             $produtoModel = new Produto();
-            $idProduto = $produtoModel->create($nomeProduto);
+            $idProduto = $produtoModel->criar($nomeProduto);
 
             $itemProdutoModel = new ItemProduto();
 
@@ -79,7 +79,7 @@ class ProdutoController extends BaseController {
                         'cor'        => $item['cor'] ?? ''
                     ]
                 ];
-                $itemProdutoModel->create($dadosItem);
+                $itemProdutoModel->criar($dadosItem);
             }
 
             $response->getBody()->write(json_encode([
@@ -111,7 +111,7 @@ class ProdutoController extends BaseController {
             }
 
             $produtoModel = new Produto();
-            $produtoModel->update($idProduto, $data['nome']);
+            $produtoModel->atualizar($idProduto, $data['nome']);
 
             $itemProdutoModel = new ItemProduto();
 
@@ -126,7 +126,7 @@ class ProdutoController extends BaseController {
                     'cor'        => $item['cor'] ?? '',
                 ];
 
-                $itemProdutoModel->update((int) $idItem, $dadosItem);
+                $itemProdutoModel->atualizar((int) $idItem, $dadosItem);
             }
 
             $response->getBody()->write(json_encode([

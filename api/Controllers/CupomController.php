@@ -34,7 +34,7 @@ class CupomController extends BaseController {
             }
 
             $cupomModel = new Cupom();
-            $cupomModel->create(
+            $cupomModel->criar(
                 array(
                     "referencia"    => $referenciaCupom,
                     "validade"      => (!empty($validadeCupom) ? $validadeCupom : NULL),

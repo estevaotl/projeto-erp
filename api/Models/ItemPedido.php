@@ -8,7 +8,7 @@ use PDO;
 class ItemPedido {
     const NOME_TABELA = "itens_pedidos";
 
-    public function create(array $dados): int {
+    public function criar(array $dados): int {
         $pdo = Database::getInstance();
         $sql = "INSERT INTO " . self::NOME_TABELA . " (idPedido, quantidade, idItem) VALUES (:idPedido, :quantidade, :idItem)";
         $stmt = $pdo->prepare($sql);

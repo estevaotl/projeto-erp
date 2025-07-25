@@ -17,7 +17,7 @@ class Carrinho {
         return $produtos ?: null;
     }
 
-    public function create(string $nome): int {
+    public function criar(string $nome): int {
         $pdo = Database::getInstance();
         $sql = "INSERT INTO " . self::NOME_TABELA . " (nome) VALUES (:nome)";
         $stmt = $pdo->prepare($sql);
