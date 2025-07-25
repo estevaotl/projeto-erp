@@ -44,4 +44,6 @@ $app->post('/cupons/editar/{id}', [CupomController::class, 'editar']);
 
 $app->get('/pedidos', [PedidoController::class, 'index']);
 
+$app->post('/pedido/webhook-atualizar-pedido-status', PedidoController::class . 'webhookAtualizarStatus');
+
 $app->run();
